@@ -1,0 +1,10 @@
+[Tt]arget*
+[Bb]in
+[Dd]ebug*/
+# ignore files from eclipse
+.metadata
+.settings
+.project
+.classpath
+# ignore thumbnails created by Windows
+[Tt]humbs.db
