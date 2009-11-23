@@ -1,4 +1,4 @@
-package geoearth.rtree;
+package geoearth.rtree.structure;
 
 import static org.junit.Assert.assertTrue;
 

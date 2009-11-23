@@ -16,9 +16,11 @@
 //  You should have received a copy of the GNU Lesser General Public
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-package geoearth.rtree;
+package geoearth.rtree.structure;
 
 import geoearth.geometry.utils.EnvelopeUtils;
+import geoearth.rtree.IntProcedure;
+import geoearth.rtree.SpatialIndex;
 import gnu.trove.TIntArrayList;
 import gnu.trove.TIntObjectHashMap;
 import gnu.trove.TIntProcedure;
@@ -60,6 +62,8 @@ public class RTree implements SpatialIndex
     private static final Logger log = LoggerFactory.getLogger(RTree.class.getName());
     private static final Logger deleteLog =
 	    LoggerFactory.getLogger(RTree.class.getName() + "-delete");
+
+    private static final String version = "1.0b2p1";
 
     // parameters of the tree
     private static final int DEFAULT_MAX_NODE_ENTRIES = 10;
@@ -566,7 +570,7 @@ public class RTree implements SpatialIndex
 	    // Step 3: Select entry to assign
 	    // Invoke algorithm pickNext to choose the next entry to assign.
 	    // Add it to the the group whose covering envelope will have to be
-	    // enlarged least to accomodate it.Resolve ties by adding the entry
+	    // enlarged least to accommodate it.Resolve ties by adding the entry
 	    // to the group with smaller area, then to the one with fewer
 	    // entries,
 	    // then to either. Repeat from Step 2
@@ -578,15 +582,16 @@ public class RTree implements SpatialIndex
 	// check that the minBoundingBox for each node is correct
 	if (INTERNAL_CONSISTENCY_CHECKING)
 	{
-	    if (!n.minBoundingBox.equals(calculateMBB(n)))
+	    if (!n.minBoundingBox.equals(calculateMinBB(n)))
 	    {
 		log.error("Error: splitNode old node minimum bounding box wrong");
 	    }
-	    if (!newNode.minBoundingBox.equals(calculateMBB(newNode)))
+	    if (!newNode.minBoundingBox.equals(calculateMinBB(newNode)))
 	    {
 		log.error("Error: splitNode new node minimum bounding box wrong");
 	    }
 	}
+	return newNode;
     }
 
     /**
