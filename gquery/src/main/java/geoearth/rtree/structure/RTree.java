@@ -56,7 +56,6 @@ import com.vividsolutions.jts.geom.Point;
  * @author aled@sourceforge.net
  * @version 1.0b2p1
  */
-@SuppressWarnings("unused")
 public class RTree implements SpatialIndex
 {
     private static final Logger log = LoggerFactory.getLogger(RTree.class.getName());
@@ -118,6 +117,10 @@ public class RTree implements SpatialIndex
     {
 	public IntProcedure m_intProcedure = null;
 
+	public TIntProcedureVisit()
+	{
+	}
+
 	public void setProcedure(IntProcedure ip)
 	{
 	    m_intProcedure = ip;
@@ -165,7 +168,7 @@ public class RTree implements SpatialIndex
      * </ul>
      * </p>
      * 
-     * @see com.infomatiq.jsi.SpatialIndex#init(Properties)
+     * @see SpatialIndex#init(Properties)
      */
     public void init(Properties props)
     {
@@ -323,10 +326,7 @@ public class RTree implements SpatialIndex
 		{
 		    continue;
 		}
-		else
-		{
-		    foundIndex = n.findEntry(en, id);
-		}
+		foundIndex = n.findEntry(en, id);
 		parents.pop();
 		parentsEntry.pop();
 	    }
@@ -355,11 +355,12 @@ public class RTree implements SpatialIndex
     }
 
     @Override
-    public void contains(Envelope r, IntProcedure v)
+    public void contains(Envelope env, IntProcedure v)
     {
 	// Find all envelopes in the tree that are contained by the passed
-	// envelope
-	// writted to be non-recursive (should model other searches on this?)
+	// envelope.
+	// <p>
+	// Written to be non-recursive (should model other searches on this?)
 	parents.clear();
 	parents.push(rootNodeId);
 
@@ -369,7 +370,7 @@ public class RTree implements SpatialIndex
 	// Test to see if the envelopes intersect before proceeding
 	// if no intersection return immediately
 	Node rootNode = getNode(rootNodeId);
-	if (!rootNode.minBoundingBox.intersects(r))
+	if (!rootNode.minBoundingBox.intersects(env))
 	{
 	    return;
 	}
@@ -387,15 +388,17 @@ public class RTree implements SpatialIndex
 		boolean intersects = false;
 		for (int i = startIndex; i < n.entryCount; i++)
 		{
-		    if (r.intersects(n.entries[i]))
+		    if (env.intersects(n.entries[i]))
+		    {
 			parents.push(n.ids[i]);
-		    parentsEntry.pop();
-		    // This becomes the start index when the child has been
-		    // searched
-		    parentsEntry.push(i);
-		    parentsEntry.push(-1);
-		    intersects = true;
-		    break; // goto the next iteration of while
+			parentsEntry.pop();
+			// This becomes the start index when the child has been
+			// searched
+			parentsEntry.push(i);
+			parentsEntry.push(-1);
+			intersects = true;
+			break; // goto the next iteration of while
+		    }
 		}
 		if (intersects)
 		{
@@ -408,7 +411,7 @@ public class RTree implements SpatialIndex
 		// if it is contained by the passed envelope
 		for (int i = 0; i < n.entryCount; i++)
 		{
-		    if (r.contains(n.entries[i]))
+		    if (env.contains(n.entries[i]))
 		    {
 			v.execute(n.ids[i]);
 		    }
@@ -446,7 +449,7 @@ public class RTree implements SpatialIndex
     }
 
     @Override
-    public void nearest(Point p, IntProcedure v, float distance)
+    public void nearest(Point p, IntProcedure v, double distance)
     {
 	Node rootNode = getNode(rootNodeId);
 	nearest(p, rootNode, distance);

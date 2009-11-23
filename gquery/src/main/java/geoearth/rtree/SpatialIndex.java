@@ -43,29 +43,29 @@ public interface SpatialIndex
     public void init(Properties props);
 
     /**
-     * Adds a new rectangle to the spatial index
+     * Adds a new envelope to the spatial index
      * 
      * @param r
-     *            The rectangle to add to the spatial index.
+     *            The envelope to add to the spatial index.
      * @param id
-     *            The ID of the rectangle to add to the spatial index. The
-     *            result of adding more than one rectangle with the same ID is
+     *            The ID of the envelope to add to the spatial index. The result
+     *            of adding more than one envelope with the same ID is
      *            undefined.
      */
     public void add(Envelope r, int id);
 
     /**
-     * Deletes a rectangle from the spatial index
+     * Deletes a envelope from the spatial index
      * 
-     * @param r
-     *            The rectangle to delete from the spatial index
+     * @param env
+     *            The envelope to delete from the spatial index
      * @param id
-     *            The ID of the rectangle to delete from the spatial index
+     *            The ID of the envelope to delete from the spatial index
      * 
-     * @return true if the rectangle was deleted false if the rectangle was not
-     *         found, or the rectangle was found but with a different ID
+     * @return true if the envelope was deleted false if the envelope was not
+     *         found, or the envelope was found but with a different ID
      */
-    public boolean delete(Envelope r, int id);
+    public boolean delete(Envelope env, int id);
 
     /**
      * Finds all rectangles that are nearest to the passed rectangle, and calls
@@ -79,43 +79,38 @@ public interface SpatialIndex
      *            nearest neighbor.
      * 
      * @param distance
-     *            The farthest distance away from the rectangle to search.
-     *            Rectangles further than this will not be found.
-     * 
-     *            This should be as small as possible to minimize the search
-     *            time.
-     * 
-     *            Use Float.POSITIVE_INFINITY to guarantee that the nearest
-     *            rectangle is found, no matter how far away, although this will
-     *            slow down the algorithm.
+     *            The farthest distance away from the point to search. Shapes
+     *            further than this will not be found. This should be as small
+     *            as possible to minimize the search time. Use
+     *            Float.POSITIVE_INFINITY to guarantee that the nearest shape is
+     *            found, no matter how far away, although this will slow down
+     *            the algorithm.
      */
-    public void nearest(Point p, IntProcedure v, float distance);
+    public void nearest(Point p, IntProcedure v, double distance);
 
     /**
      * Finds all rectangles that intersect the passed rectangle.
      * 
-     * @param r
-     *            The rectangle for which this method finds intersecting
-     *            rectangles.
+     * @param env
+     *            The envelope for which this method finds intersecting shapes.
      * 
      * @param ip
      *            The IntProcedure whose execute() method is is called for each
-     *            intersecting rectangle.
+     *            intersecting shape.
      */
-    public void intersects(Envelope r, IntProcedure ip);
+    public void intersects(Envelope env, IntProcedure ip);
 
     /**
      * Finds all rectangles contained by the passed rectangle.
      * 
-     * @param r
-     *            The rectangle for which this method finds contained
-     *            rectangles.
+     * @param env
+     *            The envelope for which this method finds contained shapes.
      * 
      * @param v
      *            The visitor whose visit() method is is called for each
-     *            contained rectangle.
+     *            contained shape.
      */
-    public void contains(Envelope r, IntProcedure v);
+    public void contains(Envelope env, IntProcedure v);
 
     /**
      * Returns the number of entries in the spatial index
