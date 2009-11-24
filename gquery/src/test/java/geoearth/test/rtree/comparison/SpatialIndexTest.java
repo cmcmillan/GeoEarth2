@@ -57,27 +57,150 @@ import com.vividsolutions.jts.util.GeometricShapeFactory;
 
 public class SpatialIndexTest
 {
+    /**
+     * General log used to log general purpose messages
+     */
     private static final Logger log = LoggerFactory.getLogger(SpatialIndexTest.class.getName());
 
+    /**
+     * Log containing only performance messages for {@code OP_ADD_RANDOM}
+     * operations.
+     */
     protected static final Logger addPerformanceLog = LoggerFactory.getLogger("addPerformance");
-
+    /**
+     * Log containing only performance messages for {@code OP_CONTAINS_RANDOM}
+     * operations.
+     */
     protected static final Logger containsPerformanceLog =
 	    LoggerFactory.getLogger("containsPerformance");
-
+    /**
+     * Log containing only performance messages for {@code OP_DELETE_RANDOM}
+     * operations.
+     */
     protected static final Logger deletePerformanceLog =
 	    LoggerFactory.getLogger("deletePerformance");
-
+    /**
+     * Log containing only performance messages for {@code OP_INTERSECT_RANDOM}
+     * operations.
+     */
     protected static final Logger intersectPerformanceLog =
 	    LoggerFactory.getLogger("intersectPerformance");
-
+    /**
+     * Log containing only performance messages for {@code OP_NEAREST_RANDOM}
+     * operations.
+     */
     protected static final Logger nearestPerformanceLog =
 	    LoggerFactory.getLogger("nearestPerformance");
 
+    /**
+     * Performance Test Type. Used when running a performance test
+     */
     protected static final int PERFORMANCE_TEST = 0;
+    /**
+     * Reference Comparison Test Type. Used when comparing the generated results
+     * with reference files
+     */
     protected static final int REFERENCE_COMPARISON_TEST = 1;
+    /**
+     * Reference Generate Test Type. Used to generate reference results files.
+     */
     protected static final int REFERENCE_GENERATE = 2;
 
+    /**
+     * ADD Operation Token
+     * <p>
+     * Add a predefined geometry to the spatial index.
+     */
+    protected static final String OP_ADD = "ADD";
+    /**
+     * ADD RANDOM Operation Token
+     * <p>
+     * Add random geometries to the spatial index.
+     */
+    protected static final String OP_ADD_RANDOM = "ADDRANDOM";
+    /**
+     * CONTAINS RANDOM Operation Token
+     * <p>
+     * Check if random geometries are contained within a geometry in the spatial
+     * index.
+     */
+    protected static final String OP_CONTAINS_RANDOM = "CONTAINSRANDOM";
+    /**
+     * DELETE Operation Token
+     * <p>
+     * Delete a geometry from the spatial index.
+     */
+    protected static final String OP_DELETE = "DELETE";
+    /**
+     * DELETE RANDOM Operation Token
+     * <p>
+     * Delete random geometries from the spatial index.
+     */
+    protected static final String OP_DELETE_RANDOM = "DELETERANDOM";
+    /**
+     * INTERSECT Operation Token
+     * <p>
+     * Check if a geometries intersects a geometry in the spatial index.
+     */
+    protected static final String OP_INTERSECT = "INTERSECT";
+    /**
+     * INTERSECT RANDOM Operation Token
+     * <p>
+     * Check if random geometries are intersect a geometry in the spatial index.
+     */
+    protected static final String OP_INTERSECT_RANDOM = "INTERSECTRANDOM";
+    /**
+     * NEAREST Operation Token
+     * <p>
+     * Find geometries closest to a point in the spatial index.
+     */
+    protected static final String OP_NEAREST = "NEAREST";
+    /**
+     * NEAREST RANDOM Operation Token Find geometries closest to random points
+     * in the spatial index.
+     */
+    protected static final String OP_NEAREST_RANDOM = "NEARESTRANDOM";
+
+    /**
+     * Supplies a set of utility methods for building Geometry objects from
+     * lists of Coordinates.
+     * 
+     * @see com.vividsolutions.jts.geom.GeometryFactory
+     */
     protected static final GeometryFactory geomFactory = new GeometryFactory();
+
+    /**
+     * Utility class that appends each id to the provided buffer.
+     * 
+     * @author cjmcmill
+     * 
+     */
+    private class TIntIteratorBuffer implements TIntProcedure
+    {
+	StringBuffer tempBuffer;
+
+	public TIntIteratorBuffer(StringBuffer buffer)
+	{
+	    tempBuffer = buffer;
+	    if (tempBuffer == null)
+	    {
+		tempBuffer = new StringBuffer();
+	    }
+	}
+
+	@Override
+	public boolean execute(int id)
+	{
+	    tempBuffer.append(' ');
+	    tempBuffer.append(id);
+	    return true;
+	}
+
+	public StringBuffer getBuffer()
+	{
+	    return tempBuffer;
+	}
+    }
 
     private void writeOutput(String outputLine, PrintWriter outputFile,
 	    LineNumberReader referenceFile)
@@ -283,7 +406,7 @@ public class SpatialIndexTest
 	// Open test input file for read-only access
 	// Filename is of form: test-testId-in
 	LineNumberReader inputFile = null;
-	String inputFileName = MessageFormat.format("{0}-{1}-{2}", testInputRoot, "in");
+	String inputFileName = MessageFormat.format("{0}-{1}", testInputRoot, "in");
 	try
 	{
 	    inputFile =
@@ -299,7 +422,7 @@ public class SpatialIndexTest
 	// Open reference results file for read-only access.
 	// Filename is of form: test-testId-reference
 	LineNumberReader referenceFile = null;
-	String referenceFileName = MessageFormat.format("{0}-{1}-{2}", testInputRoot, "reference");
+	String referenceFileName = MessageFormat.format("{0}-{1}", testResultsRoot, "reference");
 	try
 	{
 	    referenceFile =
@@ -350,6 +473,7 @@ public class SpatialIndexTest
 	long scriptStartTime = System.currentTimeMillis();
 	try
 	{
+	    // read lines from the test input file
 	    while (inputFile.ready())
 	    {
 		String inputLine = inputFile.readLine();
@@ -480,18 +604,11 @@ public class SpatialIndexTest
 									      id,
 									      decimalFormat.format(p.getX()),
 									      decimalFormat.format(p.getY())));
-				idList.forEach(new TIntProcedure()
-				{
-
-				    @Override
-				    public boolean execute(int id)
-				    {
-					tempBuffer.append(' ');
-					tempBuffer.append(id);
-					return true;
-				    }
-				});
-				writeOutput(tempBuffer.toString(), outputFile, referenceFile);
+				TIntIteratorBuffer idListVisitor =
+					new TIntIteratorBuffer(tempBuffer);
+				idList.forEach(idListVisitor);
+				writeOutput(idListVisitor.getBuffer().toString(), outputFile,
+					    referenceFile);
 			    }
 			}
 			long time = System.currentTimeMillis() - startTime;
@@ -538,18 +655,11 @@ public class SpatialIndexTest
 				final StringBuffer tempBuffer =
 					new StringBuffer(MessageFormat.format(" {} {} : OK", id,
 									      env.toString()));
-				idList.forEach(new TIntProcedure()
-				{
-
-				    @Override
-				    public boolean execute(int id)
-				    {
-					tempBuffer.append(' ');
-					tempBuffer.append(id);
-					return true;
-				    }
-				});
-				writeOutput(tempBuffer.toString(), outputFile, referenceFile);
+				TIntIteratorBuffer idListVisitor =
+					new TIntIteratorBuffer(tempBuffer);
+				idList.forEach(idListVisitor);
+				writeOutput(idListVisitor.getBuffer().toString(), outputFile,
+					    referenceFile);
 			    }
 			}
 			long time = System.currentTimeMillis() - startTime;
@@ -590,7 +700,7 @@ public class SpatialIndexTest
 			for (int id = 0; id < queryCount; id++)
 			{
 			    Envelope env = getRandomEnvelope(r, scale);
-			    TIntArrayList idList = ld.intersects(env);
+			    TIntArrayList idList = ld.contains(env);
 			    totalEntriesReturned += idList.size();
 			    if (testType == REFERENCE_COMPARISON_TEST
 				    || testType == REFERENCE_GENERATE)
@@ -598,50 +708,122 @@ public class SpatialIndexTest
 				final StringBuffer tempBuffer =
 					new StringBuffer(MessageFormat.format(" {} {} : OK", id,
 									      env.toString()));
-				idList.forEach(new TIntProcedure()
-				{
-
-				    @Override
-				    public boolean execute(int id)
-				    {
-					tempBuffer.append(' ');
-					tempBuffer.append(id);
-					return true;
-				    }
-				});
-				writeOutput(tempBuffer.toString(), outputFile, referenceFile);
+				TIntIteratorBuffer idListVisitor =
+					new TIntIteratorBuffer(tempBuffer);
+				idList.forEach(idListVisitor);
+				writeOutput(idListVisitor.getBuffer().toString(), outputFile,
+					    referenceFile);
 			    }
 			}
 			long time = System.currentTimeMillis() - startTime;
 			log.debug(
-				  "IntersectQueried {} times in {} ms. Per query: {} ms, {} entries",
+				  "ContainsQueried {} times in {} ms. Per query: {} ms, {} entries",
 				  new Object[] { queryCount, time, time / (double) queryCount,
 					  (double) totalEntriesReturned / (double) queryCount });
 			if (testType == PERFORMANCE_TEST)
 			{
-			    intersectPerformanceLog.info(
-							 "{}, {}, {}, {}, {}, {}, {}, {}, {}",
-							 new Object[] {
-								 indexType,
-								 testId,
-								 indexProperties.getProperty("MinNodeEntries"),
-								 indexProperties.getProperty("MaxNodeEntries"),
-								 indexProperties.getProperty("TreeVariant"),
-								 spatialIndex.size(),
-								 queryCount,
-								 (double) totalEntriesReturned
-									 / (double) queryCount,
-								 (double) time
-									 / (double) queryCount });
+			    containsPerformanceLog.info(
+							"{}, {}, {}, {}, {}, {}, {}, {}, {}",
+							new Object[] {
+								indexType,
+								testId,
+								indexProperties.getProperty("MinNodeEntries"),
+								indexProperties.getProperty("MaxNodeEntries"),
+								indexProperties.getProperty("TreeVariant"),
+								spatialIndex.size(),
+								queryCount,
+								(double) totalEntriesReturned
+									/ (double) queryCount,
+								(double) time / (double) queryCount });
 			}
 		    }
-		}
-		}
-	    }
+		    else if (op.equals("ADD"))
+		    {
+			int id = Integer.parseInt(st.nextToken());
+			double x1 = Double.parseDouble(st.nextToken());
+			double y1 = Double.parseDouble(st.nextToken());
+			double x2 = Double.parseDouble(st.nextToken());
+			double y2 = Double.parseDouble(st.nextToken());
+
+			spatialIndex.add(new Envelope(x1, x2, y1, y2), id);
+
+			if (testType == REFERENCE_COMPARISON_TEST || testType == REFERENCE_GENERATE)
+			{
+			    outputBuffer.append(" : OK");
+			    writeOutput(outputBuffer.toString(), outputFile, referenceFile);
+			}
+		    }
+		    else if (op.equals("DELETE"))
+		    {
+			int id = Integer.parseInt(st.nextToken());
+			double x1 = Double.parseDouble(st.nextToken());
+			double y1 = Double.parseDouble(st.nextToken());
+			double x2 = Double.parseDouble(st.nextToken());
+			double y2 = Double.parseDouble(st.nextToken());
+
+			boolean deleted = spatialIndex.delete(new Envelope(x1, x2, y1, y2), id);
+
+			if (testType == REFERENCE_COMPARISON_TEST || testType == REFERENCE_GENERATE)
+			{
+			    if (deleted)
+			    {
+				outputBuffer.append(" : OK");
+			    }
+			    else
+			    {
+				outputBuffer.append(" : Not Found");
+			    }
+			    writeOutput(outputBuffer.toString(), outputFile, referenceFile);
+			}
+		    }
+		    else if (op.equals("NEAREST"))
+		    {
+			double x1 = Double.parseDouble(st.nextToken());
+			double y1 = Double.parseDouble(st.nextToken());
+			TIntArrayList idList =
+				ld.nearest(geomFactory.createPoint(new Coordinate(x1, y1)),
+					   Double.POSITIVE_INFINITY);
+			if (testType == REFERENCE_COMPARISON_TEST || testType == REFERENCE_GENERATE)
+			{
+			    outputBuffer.append(" : OK");
+			    TIntIteratorBuffer idListVisitor = new TIntIteratorBuffer(outputBuffer);
+			    idList.forEach(idListVisitor);
+			    writeOutput(idListVisitor.getBuffer().toString(), outputFile,
+					referenceFile);
+			}
+		    }
+		    else if (op.equals("NEAREST"))
+		    {
+			double x1 = Double.parseDouble(st.nextToken());
+			double y1 = Double.parseDouble(st.nextToken());
+			double x2 = Double.parseDouble(st.nextToken());
+			double y2 = Double.parseDouble(st.nextToken());
+			TIntArrayList idList = ld.intersects(new Envelope(x1, x2, y1, y2));
+			if (testType == REFERENCE_COMPARISON_TEST || testType == REFERENCE_GENERATE)
+			{
+			    outputBuffer.append(" : OK");
+			    TIntIteratorBuffer idListVisitor = new TIntIteratorBuffer(outputBuffer);
+			    idList.forEach(idListVisitor);
+			    writeOutput(idListVisitor.getBuffer().toString(), outputFile,
+					referenceFile);
+			}
+		    }
+		} // for each token on the current input line
+	    } // for each input line
 	}
 	catch (IOException e)
 	{
 	    log.error("An error occurred while running {}", testId, e);
+	    return -1;
 	}
+	long scriptEndTime = System.currentTimeMillis();
+
+	// Try and clean up the largest objects to prevent garbage collection
+	// from slowing down a future run.
+	ld = null;
+	spatialIndex = null;
+	System.gc();
+
+	return scriptEndTime - scriptStartTime;
     }
 }
