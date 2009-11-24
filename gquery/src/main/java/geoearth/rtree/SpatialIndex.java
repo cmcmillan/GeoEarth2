@@ -34,25 +34,28 @@ public interface SpatialIndex
 {
 
     /**
-     * Initializes any implementation dependent properties of the spatial index.
-     * For example, RTree implementations will have a NodeSize property.
-     * 
-     * @param props
-     *            The set of properties used to initialize the spatial index.
-     */
-    public void init(Properties props);
-
-    /**
      * Adds a new envelope to the spatial index
      * 
-     * @param r
+     * @param env
      *            The envelope to add to the spatial index.
      * @param id
      *            The ID of the envelope to add to the spatial index. The result
      *            of adding more than one envelope with the same ID is
      *            undefined.
      */
-    public void add(Envelope r, int id);
+    public void add(Envelope env, int id);
+
+    /**
+     * Finds all rectangles contained by the passed rectangle.
+     * 
+     * @param env
+     *            The envelope for which this method finds contained shapes.
+     * 
+     * @param v
+     *            The visitor whose visit() method is is called for each
+     *            contained shape.
+     */
+    public void contains(Envelope env, IntProcedure v);
 
     /**
      * Deletes a envelope from the spatial index
@@ -66,6 +69,43 @@ public interface SpatialIndex
      *         found, or the envelope was found but with a different ID
      */
     public boolean delete(Envelope env, int id);
+
+    /**
+     * Returns the bounds of all the entries in the spatial index, or null if
+     * there are no entries.
+     * 
+     * @return minimum bounds of all the entries in the spatial index
+     */
+    public Envelope getBounds();
+
+    /**
+     * Returns a string identifying the type of spatial index, and the version
+     * number, e.g. "SimpleIndex-0.1"
+     * 
+     * @return String identifying the type of spatial index
+     */
+    public String getVersion();
+
+    /**
+     * Initializes any implementation dependent properties of the spatial index.
+     * For example, RTree implementations will have a NodeSize property.
+     * 
+     * @param props
+     *            The set of properties used to initialize the spatial index.
+     */
+    public void init(Properties props);
+
+    /**
+     * Finds all rectangles that intersect the passed rectangle.
+     * 
+     * @param env
+     *            The envelope for which this method finds intersecting shapes.
+     * 
+     * @param v
+     *            The IntProcedure whose execute() method is is called for each
+     *            intersecting shape.
+     */
+    public void intersects(Envelope env, IntProcedure v);
 
     /**
      * Finds all rectangles that are nearest to the passed rectangle, and calls
@@ -89,50 +129,10 @@ public interface SpatialIndex
     public void nearest(Point p, IntProcedure v, double distance);
 
     /**
-     * Finds all rectangles that intersect the passed rectangle.
-     * 
-     * @param env
-     *            The envelope for which this method finds intersecting shapes.
-     * 
-     * @param ip
-     *            The IntProcedure whose execute() method is is called for each
-     *            intersecting shape.
-     */
-    public void intersects(Envelope env, IntProcedure ip);
-
-    /**
-     * Finds all rectangles contained by the passed rectangle.
-     * 
-     * @param env
-     *            The envelope for which this method finds contained shapes.
-     * 
-     * @param v
-     *            The visitor whose visit() method is is called for each
-     *            contained shape.
-     */
-    public void contains(Envelope env, IntProcedure v);
-
-    /**
      * Returns the number of entries in the spatial index
      * 
      * @return number of entries in the spatial index
      */
     public int size();
-
-    /**
-     * Returns the bounds of all the entries in the spatial index, or null if
-     * there are no entries.
-     * 
-     * @return minimum bounds of all the entries in the spatial index
-     */
-    public Envelope getBounds();
-
-    /**
-     * Returns a string identifying the type of spatial index, and the version
-     * number, eg "SimpleIndex-0.1"
-     * 
-     * @return String identifying the type of spatial index
-     */
-    public String getVersion();
 
 }

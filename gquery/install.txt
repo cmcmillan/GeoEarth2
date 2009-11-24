@@ -1,0 +1,56 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Building gquery
+[INFO]    task-segment: [install]
+[INFO] ------------------------------------------------------------------------
+[INFO] [resources:resources {execution: default-resources}]
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory C:\NGA\Code\geoearth2\gquery\src\main\resources
+Downloading: http://repo.opengeo.org//sil/sil/0.43b-am1/sil-0.43b-am1.pom
+[INFO] Unable to find resource 'sil:sil:pom:0.43b-am1' in repository opengeo (http://repo.opengeo.org/)
+Downloading: http://repo1.maven.org/maven2/sil/sil/0.43b-am1/sil-0.43b-am1.pom
+[INFO] Unable to find resource 'sil:sil:pom:0.43b-am1' in repository central (http://repo1.maven.org/maven2)
+Downloading: http://repo.opengeo.org//sil/sil/0.43b-am1/sil-0.43b-am1.jar
+[INFO] Unable to find resource 'sil:sil:jar:0.43b-am1' in repository opengeo (http://repo.opengeo.org/)
+Downloading: http://repo1.maven.org/maven2/sil/sil/0.43b-am1/sil-0.43b-am1.jar
+[INFO] Unable to find resource 'sil:sil:jar:0.43b-am1' in repository central (http://repo1.maven.org/maven2)
+[INFO] ------------------------------------------------------------------------
+[ERROR] BUILD ERROR
+[INFO] ------------------------------------------------------------------------
+[INFO] Failed to resolve artifact.
+
+Missing:
+----------
+1) sil:sil:jar:0.43b-am1
+
+  Try downloading the file manually from the project website.
+
+  Then, install it using the command: 
+      mvn install:install-file -DgroupId=sil -DartifactId=sil -Dversion=0.43b-am1 -Dpackaging=jar -Dfile=C:/NGA/Code/GeoEarth2/gquery/libs/sil-0.43b-am1.jar
+
+  Alternatively, if you host your own repository you can deploy the file there: 
+      mvn deploy:deploy-file -DgroupId=sil -DartifactId=sil -Dversion=0.43b-am1 -Dpackaging=jar -Dfile=/path/to/file -Durl=[url] -DrepositoryId=[id]
+
+  Path to dependency: 
+  	1) geoearth:gquery:jar:1.0
+  	2) sil:sil:jar:0.43b-am1
+
+----------
+1 required artifact is missing.
+
+for artifact: 
+  geoearth:gquery:jar:1.0
+
+from the specified remote repositories:
+  central (http://repo1.maven.org/maven2),
+  opengeo (http://repo.opengeo.org/)
+
+
+
+[INFO] ------------------------------------------------------------------------
+[INFO] For more information, run Maven with the -e switch
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 2 seconds
+[INFO] Finished at: Tue Nov 24 14:49:17 EST 2009
+[INFO] Final Memory: 7M/13M
+[INFO] ------------------------------------------------------------------------
